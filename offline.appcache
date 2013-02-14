@@ -1,0 +1,41 @@
+CACHE MANIFEST
+
+# Revision 2
+
+CACHE:
+css/lunchfund.css
+js/lunchfund.js
+images/icon-ipad-72.png
+images/icon-ipad-144.png
+images/icon-iphone-57.png
+images/icon-iphone-114.png
+images/splash-iphone-320-460.png
+images/splash-iphone-640-920.png
+images/splash-ipad-1536-2008.png
+images/splash-ipad-2048-1496.png
+images/splash-ipad-748-1024.png
+images/splash-ipad-1004-768.png
+jquery/jquery-1.8.3.min.js
+jquery/jquery.mobile.theme-1.2.0.min.css
+jquery/jquery.mobile-1.2.0.min.css
+jquery/jquery.mobile.structure-1.2.0.min.css
+jquery/jquery.mobile-1.2.0.min.js
+jquery/jquery.formatCurrency-1.4.0.min.js
+jquery/jqm-datebox-1.1.0.min.css
+jquery/jqm-datebox-1.1.0.comp.calbox.min.js
+jquery/jqm-icon-pack-2.0-original.css
+jquery/jquery.cookie.js
+jquery/jquery.flot.js
+jquery/jquery.flot.pie.js
+jquery/images/ajax-loader.gif
+jquery/images/ajax-loader.png
+jquery/images/icons-18-white-pack.png
+jquery/images/icons-36-white-pack.png
+jquery/images/icons-18-black-pack.png
+jquery/images/icons-36-black-pack.png
+
+FALLBACK:
+/ offline.html
+
+NETWORK:
+*

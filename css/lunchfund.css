@@ -1,0 +1,18 @@
+/* === PAGE BACKGROUND AND GENERICS === */
+#settingsPage {
+    background: url(images/tiling_stripes.gif);
+}
+
+.ui-page, .ui-mobile-viewport {
+    background: url(images/white_paper.jpg);
+}
+
+
+.center-wrapper { text-align: center; }
+.center-wrapper * { margin: 0 auto; }
+
+div.ui-slider-switch {
+    position: absolute !important;
+    right: 0 !important;
+    width: 20% !important;
+}
