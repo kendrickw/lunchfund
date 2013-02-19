@@ -6,6 +6,7 @@ This a mobile app optimized for iOS and Android OS. Other mobile devices may wor
 Getting Started
 ---------------
 The [zipball of latest release][zipball] contains *index.html* and all the javascripts require to load it. Simply download it and extract the content in the webserver. Once extracted, load the *index.html* page to start the application.
+* [Download zipball of latest release][zipball]
 
 Features
 --------
