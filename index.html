@@ -53,7 +53,7 @@
       <div data-role="page" id="homePage">
 
          <div data-theme="a" data-role="header" data-position="">
-            <h1>LF Calc v0.8.9</h1>
+            <h1>LF Calc v0.9.0</h1>
 	    <div data-role="navbar" data-iconpos="left">
               <ul>
                 <li><a href="#" data-transition="fade" data-icon="home"
@@ -89,8 +89,23 @@
 
               <!-- Tip -->
               <li>
-                Tips (<span id="tipspercenttext"></span>%):
-                <span class="ui-li-aside" id="tipstext1"></span>
+                <a href="#">Tips (<span id="tipspercenttext"></span>%):
+                  <span class="ui-li-aside" id="tipstext1"></span>
+	        </a>
+		<!-- To disable button, add: class="ui-disabled" -->
+                <a href="#tipspopup" data-icon="edit" data-rel="popup">Edit</a>
+
+                <div data-role="popup" id="tipspopup" class="ui-content" data-theme="a" data-overlay-theme="a">
+                  <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete"
+                    data-iconpos="notext" class="ui-btn-left">Close</a>
+                  <table><tr>
+                    <td><a href="#" data-role="button" data-icon="minus" data-theme="b"
+                          data-iconpos="notext" id="tipsminus"></a></td>
+                    <td><span id="tipstext2"></span></td>
+                    <td><a href="#" data-role="button" data-icon="plus" data-theme="b"
+                          data-iconpos="notext" id="tipsplus"></a></td>
+                  </tr></table>
+                </div>
               </li>
 
               <!-- Meal Total -->
@@ -101,29 +116,29 @@
 
               <!-- Each Pays -->
               <li>
-                Each Pays:
-                <span class="ui-li-aside" id="eachpaystext"></span>
-              </li>
+                <a href="#">Each Pays:
+		  <span class="ui-li-aside" id="eachpaystext1"></span>
+		</a>
+		<!-- To disable button, add: class="ui-disabled" -->
+                <a href="#eachpayspopup" data-icon="edit" data-rel="popup">Edit</a>
 
-              <!-- Lunch Fund -->
-              <li>
-                <a href="#">Lunch Fund:
-                  <span class="ui-li-aside" id="lunchfundtext1"></span>
-                </a>
-                <!-- To disable button, add: class="ui-disabled" -->
-                <a href="#lunchfundpopup" data-icon="edit" data-rel="popup">Edit</a>
-
-                <div data-role="popup" id="lunchfundpopup" class="ui-content" data-theme="a" data-overlay-theme="a">
+                <div data-role="popup" id="eachpayspopup" class="ui-content" data-theme="a" data-overlay-theme="a">
                   <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete"
                     data-iconpos="notext" class="ui-btn-left">Close</a>
                   <table><tr>
                     <td><a href="#" data-role="button" data-icon="minus" data-theme="b"
-                          data-iconpos="notext" id="lunchfundminus"></a></td>
-                    <td><span id="lunchfundtext2"></span></td>
+                          data-iconpos="notext" id="eachpayminus"></a></td>
+                    <td><span id="eachpaystext2"></span></td>
                     <td><a href="#" data-role="button" data-icon="plus" data-theme="b"
-                          data-iconpos="notext" id="lunchfundplus"></a></td>
+                          data-iconpos="notext" id="eachpayplus"></a></td>
                   </tr></table>
                 </div>
+              </li>
+
+              <!-- Lunch Fund -->
+              <li>
+                Lunch Fund:
+                <span class="ui-li-aside" id="lunchfundtext"></span>                
               </li>
 
             </ul>

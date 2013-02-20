@@ -2,6 +2,10 @@
 
 ---
 
+### 0.9.0
+* Move lunchfund adjuster to tips field +/- $0.25
+* Implement each pays adjuster +/- $1.00
+
 ### 0.8.9
 * JSON handler revamped (performance improvement)
 * Disable cookie, using local storage instead

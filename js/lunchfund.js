@@ -51,7 +51,16 @@ $(document).on('pageinit', '#homePage', function() {
     $(this).val('');
   });
 
-  $('#lunchfundminus').click(function() {
+  $('#tipsminus').click(function() {
+    if (amountToTip >= 0.25) {
+      amountToTip -= 0.25;
+      amountToPay -= 0.25;
+      lunchFundAmount += 0.25;
+      drawAllAmountsText();
+    }
+  });
+
+  $('#tipsplus').click(function() {
     if (lunchFundAmount >= 0.25) {
       amountToTip += 0.25;
       amountToPay += 0.25;
@@ -59,14 +68,19 @@ $(document).on('pageinit', '#homePage', function() {
       drawAllAmountsText();
     }
   });
-
-  $('#lunchfundplus').click(function() {
-    if (amountToTip >= 0.25) {
-      amountToTip -= 0.25;
-      amountToPay -= 0.25;
-      lunchFundAmount += 0.25;
+  
+  $('#eachpayminus').click(function() {
+    if (lunchFundAmount > attendee.length) {
+      eachPays -= 1.00;
+      lunchFundAmount -= attendee.length;
       drawAllAmountsText();
     }
+  });
+
+  $('#eachpayplus').click(function() {
+    eachPays += 1.00;
+    lunchFundAmount += attendee.length;
+    drawAllAmountsText();
   });
 
   $('#submitterselect').change(function() {
@@ -543,10 +557,11 @@ function drawAllAmountsText ()
 {
   $("#tipspercenttext").text(calculate_actual_tip_percentage(billAmount, amountToTip));
   $("#tipstext1").text(amountToTip).formatCurrency();
+  $("#tipstext2").text(amountToTip).formatCurrency();
   $("#mealtotaltext").text(amountToPay).formatCurrency();
-  $("#eachpaystext").text(eachPays).formatCurrency();
-  $("#lunchfundtext1").text(lunchFundAmount).formatCurrency();
-  $("#lunchfundtext2").text(lunchFundAmount).formatCurrency();
+  $("#eachpaystext1").text(eachPays).formatCurrency();
+  $("#eachpaystext2").text(eachPays).formatCurrency();
+  $("#lunchfundtext").text(lunchFundAmount).formatCurrency();
 }
 
 // Given a string input of form "1234.55x",
