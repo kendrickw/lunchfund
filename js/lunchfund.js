@@ -20,19 +20,61 @@ var amountToPay = 0;
 var eachPays = 0;
 var lunchFundAmount = 0;
 
+// GLobal variables for keeping track of various state
+var attendeeChanged = false;
+
 //*******************************************************************
 // MAINPAGE event handler
 //*******************************************************************
 
-$(document).on('pageinit', '#homePage', function() {
-
-  // For iOS, switch to 'text' input, for enhanced Bill Amount entering experience
-
-  if (navigator.userAgent.match(/(iPod|iPhone|iPad)/i)){
-    var numInput = document.getElementById('billamountinput');
-    numInput.setAttribute('type','text');
+// Initialize attendee list
+// If local storage exists, use it.  Otherwise
+// get the information from the top 5 shareholders
+function initAttendeeList () {
+  if (attendee === null) {
+    attendee = JSON.parse(localStorageGetItem('attendee'));
   }
 
+  if (attendee === null) {
+    attendee = [];
+    // Mark top 5 shareholders as default attendee
+    var i = 0;
+    var len = namelist.length;
+    if (len > 5) len = 5;
+    while (i<len) {
+      attendee.push(namelist[i]);
+      i++;
+    }
+
+    // Cache the attendee list
+    localStorageSetItem('attendee', JSON.stringify(attendee));
+  }
+}
+
+// Pre-DOM manipulation code. Fire once per application
+// The following kind of items should go here:
+//   - Variable initializations
+//   - Event driven code
+$(document).on('pagecreate', '#homePage', function() {
+
+  // Debug traces
+  // console.log('homePage pagecreate');
+
+  // Initialize global variables from local storage
+  submitter = localStorageGetItem('submitter');
+  showSubmitter = localStorageGetItem('showSubmitter');
+  if (showSubmitter === null) {
+    showSubmitter = 1;
+  }
+  share = JSON.parse(localStorageGetItem('share'));
+  fund_bookvalue = localStorageGetItem('fund_bookvalue');
+  total_shares = localStorageGetItem('total_shares');
+
+  if (namelist === null) {
+    namelist = JSON.parse(localStorageGetItem('namelist'));
+  }
+
+  // Event driven code
   $('#billamountinput').keyup(function () {
     if ($(this).attr('type') == 'text') {
       var val = $(this).val().toString();
@@ -89,53 +131,16 @@ $(document).on('pageinit', '#homePage', function() {
       localStorageSetItem('submitter', submitter);
     }
   });
-
-  // Initialize global variables from local storage
-  submitter = localStorageGetItem('submitter');
-  showSubmitter = localStorageGetItem('showSubmitter');
-  if (showSubmitter === null) {
-    showSubmitter = 1;
-  }
-  share = JSON.parse(localStorageGetItem('share'));
-  fund_bookvalue = localStorageGetItem('fund_bookvalue');
-  total_shares = localStorageGetItem('total_shares');
+  
 });
 
-$(document).on('pagecreate', '#homePage', function() {
+// Post-DOM manipulation code. Fire once per application
+$(document).on('pageinit', '#homePage', function() {
 
-});
-
-// Initialize attendee list
-// If local storage exists, use it.  Otherwise
-// get the information from the top 5 shareholders
-function initAttendeeList () {
-  if (attendee === null) {
-    attendee = JSON.parse(localStorageGetItem('attendee'));
-  }
-
-  if (attendee === null) {
-    attendee = [];
-    // Mark top 5 shareholders as default attendee
-    $.each(namelist, function (i, name) {
-      if (i<5) {
-        attendee.push(name);
-      }
-    });
-
-    // Cache the attendee list
-    localStorageSetItem('attendee', JSON.stringify(attendee));
-  }
-}
-
-$(document).on('pageshow', '#homePage', function() {
-  if (showSubmitter == 0) {
-    $('#submitterfield').hide();
-  } else {
-    $('#submitterfield').show();
-  }
-
-  if (namelist === null) {
-    namelist = JSON.parse(localStorageGetItem('namelist'));
+  // For iOS, switch to 'text' input, for enhanced Bill Amount entering experience
+  if (navigator.userAgent.match(/(iPod|iPhone|iPad)/i)){
+    var numInput = document.getElementById('billamountinput');
+    numInput.setAttribute('type','text');
   }
 
   if (namelist === null) {
@@ -145,7 +150,6 @@ $(document).on('pageshow', '#homePage', function() {
 
     jsonReadGoogleSpreadsheet(function() {
       initAttendeeList();
-      drawAppFormChkBox ($("#peoplelistcheckboxes"));
 
       drawParticipantText();
       calculate_using_billAmount(billAmount, attendee.length);
@@ -158,8 +162,6 @@ $(document).on('pageshow', '#homePage', function() {
   } else {
     initAttendeeList();
 
-    drawAppFormChkBox ($("#peoplelistcheckboxes"));
-
     drawParticipantText();
     calculate_using_billAmount(billAmount, attendee.length);
     drawAllAmountsText ();
@@ -168,36 +170,76 @@ $(document).on('pageshow', '#homePage', function() {
     drawSelectMenu ($('#submitterselect'), attendee, submitter);
     drawGoogleFormChkBox ($("#googleforminput"));
   }
+
+});
+
+// Every time the page is shown, this function will be triggered.
+$(document).on('pageshow', '#homePage', function() {
+  if (showSubmitter == 0) {
+    $('#submitterfield').hide();
+  } else {
+    $('#submitterfield').show();
+  }
+  
+  if (attendeeChanged == true) {
+    // Save current attendee list
+    localStorageSetItem('attendee', JSON.stringify(attendee));
+    
+    // Redraw all elements that may change due to attendee list changes
+    drawParticipantText();
+    calculate_using_billAmount(billAmount, attendee.length);
+    drawAllAmountsText ();
+
+    drawSelectMenu ($('#fundholderselect'), attendee, getLunchFundHolder());
+    drawSelectMenu ($('#submitterselect'), attendee, submitter);
+    
+    attendeeChanged = false;
+  }
 });
 
 //*******************************************************************
 // PEOPLE PAGE event handler
 //*******************************************************************
 
-$(document).on('pageinit', '#peoplePage', function() {
-  // Register checkbox selection result
-  $('#peopletomainbutton').click (function () {
-    if (attendee.length !== 0) {
-      attendee.splice(0);
-    }
-
-    $('#peoplelistcheckboxes input:checked').each(function() {
-      attendee.push($(this).attr('name'));
-    });
-
-    localStorageSetItem('attendee', JSON.stringify(attendee));
-  });
+// Pre-DOM manipulation code. Fire once per application
+// The following kind of items should go here:
+//   - Variable initializations
+//   - Event driven code
+$(document).on('pagecreate', '#peoplePage', function() {
+  
 });
 
-$(document).on('pagecreate', '#peoplePage', function() {
-
+// Post-DOM manipulation code. Fire once per application
+$(document).on('pageinit', '#peoplePage', function() {
+  drawAppFormChkBox ($("#peoplelistcheckboxes"));
+  
+  // This event can only be placed here, because the checkboxes are
+  // drawn in pageinit code.
+  $('#peoplelistcheckboxes input:checkbox').change(function() {
+    attendeeChanged = true;
+    var nameChanged = $(this).attr('name');
+    
+    if ($(this).is(':checked')) {
+      attendee.push(nameChanged);
+    } else {
+      // remove name from attendee list
+      var index= $.inArray(nameChanged, attendee);
+      if (index != 1) {
+        attendee.splice(index,1);
+      }
+    }
+  });
 });
 
 //*******************************************************************
 // SETTING PAGE event handler
 //*******************************************************************
 
-$(document).on('pageinit', '#settingsPage', function() {
+// Pre-DOM manipulation code. Fire once per application
+// The following kind of items should go here:
+//   - Variable initializations
+//   - Event driven code
+$(document).on('pagecreate', '#settingsPage', function() {
   $('#clearlocalstoragebutton').click(function() {
     localStorage.removeItem('submitter');
     localStorage.removeItem('showSubmitter');
@@ -228,6 +270,13 @@ $(document).on('pageinit', '#settingsPage', function() {
     localStorageSetItem('showSubmitter', showSubmitter);
   });
 
+});
+
+// Post-DOM manipulation code. Fire once per application
+$(document).on('pageinit', '#settingsPage', function() {
+  // Default date in 'lunch date' field
+  $("#eventdate").attr('value', getDate());
+
   // Disable certain settings control, if local storage is not supported
   if (!Modernizr.localstorage) {
     $('#clearlocalstoragebutton').addClass('ui-disabled');
@@ -236,12 +285,6 @@ $(document).on('pageinit', '#settingsPage', function() {
 
   // Reflect 'showSubmitter' checkbox status
   $('#showsubmitterchkbox').attr("checked",showSubmitter == 1 ? true: false).checkboxradio("refresh");
-});
-
-$(document).on('pagecreate', '#settingsPage', function() {
-  // Default date in 'lunch date' field
-  $("#eventdate").attr('value', getDate());
-
 });
 
 $(document).on('pageshow', '#settingsPage', function() {
@@ -301,13 +344,16 @@ var google_form_eventdate_id     = "entry_4";
 function drawGoogleFormChkBox(element) {
     var chkboxlist = "";
 
-    $.each (namelist, function (i, name) {
+    var i = 0;
+    var len = namelist.length;
+    while (i<len) {
       chkboxlist +=
         '<input type="checkbox" style="display:none;"' +
         ' name="' + google_form_input_name + '"' +
-        ' value="' + name + '"' +
+        ' value="' + namelist[i] + '"' +
         ' id="' + google_form_input_id_pfx + i + '"/>\n';
-    });
+      i++;
+    }
 
     element.empty();
     element.append(chkboxlist);
@@ -325,7 +371,10 @@ function drawGoogleFormChkBox(element) {
 function drawAppFormChkBox (element) {
     var chkboxlist = "";
 
-    $.each (namelist, function (i, name) {
+    var i = 0;
+    var len = namelist.length;
+    while (i<len) {
+      var name = namelist[i];
       chkboxlist +=
         '<input type="checkbox"' +
         ' id="chkbox_' + i + '"' +
@@ -337,8 +386,9 @@ function drawAppFormChkBox (element) {
         '<label for="chkbox_' + i + '">' +
         name +
         '</label>\n';
-    });
-
+      i++;
+    }
+    
     element.empty();
     element.append(chkboxlist);
     element.parent().trigger('create');
@@ -354,7 +404,10 @@ function drawAppFormChkBox (element) {
 function drawSelectMenu (selectelement, selectlist, selected) {
   var optionlist = "<option value='' data-placeholder='true'>Choose one</option>\n";
 
-  $.each (selectlist, function (i, name) {
+  var i = 0;
+  var len = selectlist.length;
+  while (i<len) {
+    var name = selectlist[i];
     optionlist +=
       '<option value="' + name + '"';
     if (selected == name) {
@@ -364,8 +417,9 @@ function drawSelectMenu (selectelement, selectlist, selected) {
       '>' +
       name +
       '</option>\n';
-  });
-
+    i++;
+  }
+  
   selectelement.empty();
   selectelement.append(optionlist);
   selectelement.selectmenu('refresh');
@@ -377,7 +431,11 @@ function drawSelectMenu (selectelement, selectlist, selected) {
 
 // Populate Attendee list to Google Doc checkboxes
 function syncGoogleCheckboxes () {
-  $.each (namelist, function (i, name) {
+  
+  var i = 0;
+  var len = namelist.length;
+  while (i<len) {
+    var name = namelist[i];
     var input_idname = google_form_input_id_pfx + i;
     var input_elem = $("#"+input_idname);
 
@@ -387,7 +445,8 @@ function syncGoogleCheckboxes () {
     } else {
       input_elem.removeAttr('checked');
     }
-  });
+    i++;
+  }
 }
 
 function syncGoogleLunchFundAmount () {
