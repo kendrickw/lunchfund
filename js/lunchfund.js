@@ -206,7 +206,7 @@ $(document).on('pageshow', '#homePage', function() {
 //   - Variable initializations
 //   - Event driven code
 $(document).on('pagecreate', '#peoplePage', function() {
-  
+
 });
 
 // Post-DOM manipulation code. Fire once per application
@@ -217,16 +217,18 @@ $(document).on('pageinit', '#peoplePage', function() {
   // drawn in pageinit code.
   $('#peoplelistcheckboxes input:checkbox').change(function() {
     attendeeChanged = true;
-    var nameChanged = $(this).attr('name');
+  });
+  
+  $('#peopletomainbutton').click (function () {
+    if (attendeeChanged == true) {
     
-    if ($(this).is(':checked')) {
-      attendee.push(nameChanged);
-    } else {
-      // remove name from attendee list
-      var index= $.inArray(nameChanged, attendee);
-      if (index != 1) {
-        attendee.splice(index,1);
+      if (attendee.length !== 0) {
+        attendee.splice(0);
       }
+
+      $('#peoplelistcheckboxes input:checked').each(function() {
+        attendee.push($(this).attr('name'));
+      });
     }
   });
 });
@@ -334,12 +336,12 @@ function getDate() {
 // <input type="checkbox" style="display:none;" name="entry.0.group" value="Ka" id="Gform_#">
 // This only needs to be performed once
 //*******************************************************************
-var google_form_input_name       = "entry.0.group";
+var google_form_input_name       = "entry.598889479";
 var google_form_input_id_pfx     = "gform_";
-var google_form_lunchfund_id     = "entry_1";
-var google_form_whoholdsmoney_id = "entry_2";
-var google_form_submittername_id = "entry_3";
-var google_form_eventdate_id     = "entry_4";
+var google_form_lunchfund_id     = "entry_1892695599";
+var google_form_whoholdsmoney_id = "entry_960282559";
+var google_form_submittername_id = "entry_1745174688";
+var google_form_eventdate_id     = "entry_472715279";
 
 function drawGoogleFormChkBox(element) {
     var chkboxlist = "";
