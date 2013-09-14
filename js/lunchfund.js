@@ -253,7 +253,7 @@ $(document).on('pagecreate', '#settingsPage', function() {
     localStorage.removeItem('total_shares');
     localStorage.removeItem('timeofstat');
 
-    alert ('Local Storage Removed');
+    alert ('Local Storage Removed, You must restart the app now');
   });
 
   $('#refreshdatabutton').click(function() {
@@ -731,7 +731,7 @@ function jsonReadGoogleSpreadsheet (callbackfunc)
   // Enable busy indicator
   $.mobile.loading('show');
 
-  $.getJSON("https://spreadsheets.google.com/feeds/cells/0Ar6mVNHXXbF3dHV4QmMtdmpUbWcxOHJpZFhwSGxUbWc/od7/public/basic?alt=json-in-script&callback=?",
+  $.getJSON("https://spreadsheets.google.com/feeds/cells/0Av83aWCuOImRdDA5cFVBd2hlbnhvYnhkQmJMNUhHYXc/od7/public/basic?alt=json-in-script&callback=?",
     function(data) {
     var owner_row = 0;   // spreadsheet row containing owner name
     var shares_row = 0;  // spreadsheet row containing # of shares
