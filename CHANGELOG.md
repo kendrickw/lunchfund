@@ -2,6 +2,13 @@
 
 ---
 
+### 0.9.2
+* Summary tab reflects data from official spreadsheet.
+
+### 0.9.1
+* Write data to official spreadsheet
+* 'Where to eat' random restaurant chooser
+
 ### 0.9.0
 * Move lunchfund adjuster to tips field +/- $0.25
 * Implement each pays adjuster +/- $1.00
