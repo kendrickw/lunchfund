@@ -44,6 +44,10 @@
 
    <body>
 
+      <audio>
+         <source src="audio/tada.mp3" type="audio/mpeg">
+      </audio>
+
       <!-----------
        Main Page
        To change color, add data-theme="a" (black), "b" (blue), etc..
@@ -195,6 +199,12 @@
                <!-- submission button -->
                <input type="submit" name="submit" data-theme="e" data-icon="wifi" data-iconpos="right" value="Submit to Google Doc"/>
             </form>
+
+            <!-- "tada" sound on submit courtesy of filo -->
+            <script>
+               var audio = document.getElementsByTagName("audio")[0];
+               buttonSubmitToGoogleDoc.onclick = function () { audio.play(); };
+            </script>
 
          </div> <!-- end of homePage content -->
 
