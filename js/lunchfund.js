@@ -212,22 +212,68 @@ $(document).on('pagecreate', '#peoplePage', function() {
 // Post-DOM manipulation code. Fire once per application
 $(document).on('pageinit', '#peoplePage', function() {
   drawAppFormChkBox ($("#peoplelistcheckboxes"));
-  
+ // 
   // This event can only be placed here, because the checkboxes are
   // drawn in pageinit code.
-  $('#peoplelistcheckboxes input:checkbox').change(function() {
-    attendeeChanged = true;
-  });
+//  $('#peoplelistcheckboxes input:checkbox').change(function() {
+//    attendeeChanged = true;
+//  });
   
   $('#peopletomainbutton').click (function () {
-    if (attendeeChanged == true) {
-    
+
+    // set attendeeChanged unconditionally because maybe the "Other"
+    // field was changed.  There isn't much of a performance
+    // penalty by doing this unconditionally anyway.
+    attendeeChanged = true;
+
+//    if (attendeeChanged == true)
+    {
+
       if (attendee.length !== 0) {
         attendee.splice(0);
       }
 
-      $('#peoplelistcheckboxes input:checked').each(function() {
-        attendee.push($(this).attr('name'));
+//      $('#peoplelistcheckboxes input:checked').each(function() {
+//        attendee.push($(this).attr('name'));
+//      });
+      $('#peoplelistcheckboxes input').each(function()
+      {
+        // Deal with all the checkbox fields.
+        if ($(this).prop('checked'))
+        {
+          if ($(this).attr('name') != 'Other')
+          {
+            // All fields except "Other" go into the attendee list.
+            attendee.push($(this).attr('name'));
+          }
+          else
+          {
+            // For the "Other field", split it into an array
+            // based on a comma delimiter and add each element to
+            // the attendee list.
+            $('#peoplelistcheckboxes input:text').each(function()
+            {
+              var otherVal = $(this).val();
+              var otherList = otherVal.split(/, */);
+              var curVal;
+
+//              window.console&&console.log(otherVal);
+
+              if (!otherVal.match(/^ *$/))
+              {
+                var index;
+                for (index = 0; index < otherList.length; index++)
+                {
+                  curVal = otherList[index];
+                  if (!curVal.match(/^ *$/))
+                  {
+                    attendee.push(curVal);
+                  }
+                }
+              }
+            });
+          }
+        }
       });
     }
   });
@@ -357,6 +403,18 @@ function drawGoogleFormChkBox(element) {
       i++;
     }
 
+    chkboxlist +=
+      '<input type="checkbox" style="display:none;"' +
+      ' name="' + google_form_input_name + '"' +
+      ' value="' + '__other_option__' + '"' +
+      ' id="' + google_form_input_id_pfx + 'other_chk' + '"/>\n';
+
+    chkboxlist +=
+      '<input type="text`" style="display:none;"' +
+      ' name="' + google_form_input_name + '.other_option_response' + '"' +
+      ' value=""' +
+      ' id="' + google_form_input_id_pfx + 'other_txt' + '"/>\n';
+
     element.empty();
     element.append(chkboxlist);
     // No need to trigger create, since this is not rendered on screen anyways
@@ -390,6 +448,20 @@ function drawAppFormChkBox (element) {
         '</label>\n';
       i++;
     }
+      chkboxlist +=
+        '<input type="checkbox"' +
+        ' id="chkbox_' + i + '"' +
+        ' name="Other"';
+      chkboxlist += '/>\n' +
+        '<label for="chkbox_' + i + '">' +
+        'Other (guest1, guest2, ...)' +
+        '</label>\n';
+      i++;
+
+      chkboxlist +=
+        '<input type="text"' +
+        ' id="txt1"' +
+        ' name="Other" value=""/>\n';
     
     element.empty();
     element.append(chkboxlist);
@@ -436,10 +508,15 @@ function syncGoogleCheckboxes () {
   
   var i = 0;
   var len = namelist.length;
+  var name;
+  var input_idname;
+  var input_elem;
+  var otherString = "";
+
   while (i<len) {
-    var name = namelist[i];
-    var input_idname = google_form_input_id_pfx + i;
-    var input_elem = $("#"+input_idname);
+    name = namelist[i];
+    input_idname = google_form_input_id_pfx + i;
+    input_elem = $("#"+input_idname);
 
     if ($.inArray(name, attendee) != -1) {
       input_elem.attr('checked','checked');
@@ -448,6 +525,35 @@ function syncGoogleCheckboxes () {
       input_elem.removeAttr('checked');
     }
     i++;
+  }
+
+  // build the "other" field if there are any guests.
+  for (i=0; i<attendee.length; i++)
+  {
+    name = attendee[i];
+
+    if ($.inArray(name, namelist) == -1)
+    {
+      if (otherString != "")
+      {
+        otherString += ', ';
+      }
+
+      otherString += name;
+    }
+  }
+
+  window.console&&console.log('Guest list : [' + otherString + ']');
+
+  if (otherString != "")
+  {
+    input_idname = google_form_input_id_pfx + 'other_chk';
+    input_elem = $("#"+input_idname);
+    input_elem.attr('checked','checked');
+
+    input_idname = google_form_input_id_pfx + 'other_txt';
+    input_elem = $("#"+input_idname);
+    input_elem.attr('value', otherString);
   }
 }
 
@@ -728,10 +834,11 @@ function drawPieChart (inputnamelist) {
 // And optionally invoke a callback function after refresh completes.
 function jsonReadGoogleSpreadsheet (callbackfunc)
 {
+  var urlJson = "https://spreadsheets.google.com/feeds/cells/0Av83aWCuOImRdDA5cFVBd2hlbnhvYnhkQmJMNUhHYXc/od7/public/basic?alt=json-in-script&callback=?";
   // Enable busy indicator
   $.mobile.loading('show');
 
-  $.getJSON("https://spreadsheets.google.com/feeds/cells/0Av83aWCuOImRdDA5cFVBd2hlbnhvYnhkQmJMNUhHYXc/od7/public/basic?alt=json-in-script&callback=?",
+  $.getJSON(urlJson,
     function(data) {
     var owner_row = 0;   // spreadsheet row containing owner name
     var shares_row = 0;  // spreadsheet row containing # of shares
@@ -750,6 +857,7 @@ function jsonReadGoogleSpreadsheet (callbackfunc)
         var cell  = entry.title.$t;
         var value = entry.content.$t;
 
+//        window.console&&console.log("cell ["+cell+"] value ["+value+"]");
         if (cell[0] == 'A') {
           if (bookvalue_row === 0 && value == 'Current Fund Book Value') {
             bookvalue_row = cell.substr(1);
