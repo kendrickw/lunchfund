@@ -142,7 +142,8 @@ if (isset($_POST['submit']))
         $lunchfund = trim(str_replace('$','',$data[HdrCol::Fund]));
         $datepieces = explode ('/', $data[HdrCol::Date]);
         $time = $datepieces[2] . '-' . $datepieces[0] . '-' . $datepieces[1];
-        $sql="INSERT into $tbl_lunch_events(time, fund) values('$time', '$lunchfund')";
+        $fundholder = $data[HdrCol::Holder];        
+        $sql="INSERT into $tbl_lunch_events(time, fund, fundholder) values('$time', '$lunchfund', '$fundholder')";
         if (!mysqli_query($con,$sql))
         {
             die("<p>Error inserting entries into $tbl_lunch_events: " . mysqli_error($con));
@@ -159,9 +160,7 @@ if (isset($_POST['submit']))
             if ($data[$i] == 1)
             {
                 $username = $usernames[$i];
-                $fundholder = 0;
-                if ($data[HdrCol::Holder] == $username) $fundholder = 1;
-                $sql="INSERT into $tbl_lunch_event_lookup(lunch_event_id, username, fundholder) values('$lunch_event_id','$username','$fundholder')";
+                $sql="INSERT into $tbl_lunch_event_lookup(lunch_event_id, username) values('$lunch_event_id','$username')";
                 if (!mysqli_query($con,$sql))
                 {
                     die("<p>Error inserting entries into $tbl_lunch_event_lookup: " . mysqli_error($con));

@@ -54,9 +54,11 @@ $sql="CREATE TABLE lunch_events (
   lunch_event_id int(11) NOT NULL auto_increment,
   rest_id        int(11) NOT NULL default '0',
   time           datetime,
-  bill           decimal(10,2) NOT NULL,
-  totalpaid      decimal(10,2) NOT NULL,
-  fund           decimal(10,2) NOT NULL,
+  bill           decimal(10,2) NOT NULL default '0',
+  totalpaid      decimal(10,2) NOT NULL default '0',
+  fund           decimal(10,2) NOT NULL default '0',
+  fundholder     varchar(15) NOT NULL default '',
+  submitter      varchar(15) NOT NULL default '',
   PRIMARY KEY  (lunch_event_id)
 )";
 if (!mysqli_query($con,$sql))
@@ -67,6 +69,7 @@ if (!mysqli_query($con,$sql))
 $sql="CREATE TABLE lunch_event_lookup (
   lunch_event_id  int(11) NOT NULL default '0',
   username        varchar(15) NOT NULL default '',
+  multiplier      tinyint(4) NOT NULL default '1',
   PRIMARY KEY  (lunch_event_id, username)
 )";
 if (!mysqli_query($con,$sql))
