@@ -1,7 +1,7 @@
 <?php
 //--------------------------------------------------------------------------
 // MYSQL database related globals
-// Make sure you create a user with SELECT, INSERT, DELETE, UPDATE privileges
+// Make sure you create a user with SELECT, INSERT, UPDATE privileges
 // To populate tables, CREATE, DROP privileges are required
 //--------------------------------------------------------------------------
 $host = "localhost";
