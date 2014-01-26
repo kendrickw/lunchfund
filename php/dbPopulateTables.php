@@ -46,14 +46,6 @@ $maxLineLen = 1000;     // maximum line length per row
 $rowsToIgnore = 4;      // Number of rows occupied by the header
 $usernameRow = 4;       // Row containing names of lunchers
 
-// SQL database name
-$databaseName = "lunchfund";
-
-// SQL tables to update
-$tbl_lunchers = "lunchers";
-$tbl_lunch_events = "lunch_events";
-$tbl_lunch_event_lookup = "lunch_event_lookup";
-
 // CSV column layout
 class HdrCol
 {
@@ -67,10 +59,16 @@ class HdrCol
 };
 
 // Connect to mysql database
-include "dbConnect.php";
+include 'dbParms.php';
+
+$con = mysqli_connect($host, $user, $pass);
+if (mysqli_connect_errno($con))
+{
+    die("<p>Failed to connect to MySQL: " . mysqli_connect_error());
+}
 
 // Select database
-mysqli_select_db($con, $databaseName);
+mysqli_select_db($con, $dbname);
 // return name of current default database
 if ($result = mysqli_query($con, "SELECT DATABASE()")) {
     $row = mysqli_fetch_row($result);
@@ -117,7 +115,7 @@ if (isset($_POST['submit']))
         if ($curRow == $usernameRow)
         {
             $num = count($data);
-            $usernames = $data;
+            $luncherNames = $data;
             for ($i = HdrCol::Name; $i<$num ;$i++)
             {
                 $sql="INSERT into $tbl_lunchers(username) values('$data[$i]')";
@@ -125,6 +123,9 @@ if (isset($_POST['submit']))
                 {
                     die("<p>Error inserting entries into $tbl_lunchers: " . mysqli_error($con));
                 }
+
+                // Query the ID of the previously inserted user
+                $luncherID["'$data[$i]'"] = mysqli_insert_id($con);
             }
         }
 
@@ -142,13 +143,14 @@ if (isset($_POST['submit']))
         $lunchfund = trim(str_replace('$','',$data[HdrCol::Fund]));
         $datepieces = explode ('/', $data[HdrCol::Date]);
         $time = $datepieces[2] . '-' . $datepieces[0] . '-' . $datepieces[1];
-        $fundholder = $data[HdrCol::Holder];        
-        $sql="INSERT into $tbl_lunch_events(time, fund, fundholder) values('$time', '$lunchfund', '$fundholder')";
+        $fundholderNm = $data[HdrCol::Holder];
+        $fundholderID = $luncherID["'$fundholderNm'"];
+        $sql="INSERT into $tbl_lunch_events(time, fund, fundholder) values('$time', '$lunchfund', '$fundholderID')";
         if (!mysqli_query($con,$sql))
         {
             die("<p>Error inserting entries into $tbl_lunch_events: " . mysqli_error($con));
         }
-        printf("<br />Entry: time=" . $time . " fund=" . $lunchfund);
+        printf("<br />Entry: time=" . $time . " fund=" . $lunchfund . "[" . $fundholderNm . "] lunchers=");
 
         // Query the ID of the previously inserted lunch event
         $lunch_event_id = mysqli_insert_id($con);
@@ -159,8 +161,9 @@ if (isset($_POST['submit']))
         {
             if ($data[$i] == 1)
             {
-                $username = $usernames[$i];
-                $sql="INSERT into $tbl_lunch_event_lookup(lunch_event_id, username) values('$lunch_event_id','$username')";
+                $userid = $luncherID["'$luncherNames[$i]'"];
+                printf ($luncherNames[$i] . ", ");
+                $sql="INSERT into $tbl_lunch_event_lookup(lunch_event_id, luncher_id) values('$lunch_event_id','$userid')";
                 if (!mysqli_query($con,$sql))
                 {
                     die("<p>Error inserting entries into $tbl_lunch_event_lookup: " . mysqli_error($con));
@@ -168,24 +171,25 @@ if (isset($_POST['submit']))
                 $luncherNum++;
             }
         }
-        printf (" " . $luncherNum . " lunchers attended");
+        printf (" total=" . $luncherNum);
     }
 
     fclose($handle);
 
     print "<p>Import done";
-
-    //view upload form
 }
 else
 {
-
     print "<p>Upload new csv by browsing to file and clicking on Upload<br />";
     print "<form enctype='multipart/form-data' action='dbPopulateTables.php' method='post'>";
     print "File name to import:<br />";
     print "<input size='50' type='file' name='filename'><br />";
     print "<input type='submit' name='submit' value='Upload'></form>";
 }
+
+// Close connection
+mysqli_close($con);
+
                 ?>
 
             </div>

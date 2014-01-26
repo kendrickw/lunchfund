@@ -1,28 +1,25 @@
 <?php
 
-// SQL database name
-$databaseName = "lunchfund";
-
-// SQL tables to update
-$tbl_lunchers = "lunchers";
-$tbl_restaurants = "restaurants";
-$tbl_lunch_events = "lunch_events";
-$tbl_lunch_event_lookup = "lunch_event_lookup";
-
 //--------------------------------------------------------------------------
-// 1) Connect to mysql database
+// Connect to mysql database
 //--------------------------------------------------------------------------
-include 'dbConnect.php';
+include 'dbParms.php';
+
+$con = mysqli_connect($host, $user, $pass);
+if (mysqli_connect_errno($con))
+{
+    die("<p>Failed to connect to MySQL: " . mysqli_connect_error());
+}
 
 // Select database
-$dbexist = mysqli_select_db($con, $databaseName);
+$dbexist = mysqli_select_db($con, $dbname);
 if ($dbexist)
 {
     // Delete database
-    $sql="DROP DATABASE $databaseName";
+    $sql="DROP DATABASE $dbname";
     if (mysqli_query($con,$sql))
     {
-        printf("<p>Database '$databaseName' dropped successfully.");
+        printf("<p>Database '$dbname' dropped successfully.");
     }
     else
     {
@@ -31,10 +28,10 @@ if ($dbexist)
 }
 
 // Create database
-$sql="CREATE DATABASE $databaseName";
+$sql="CREATE DATABASE $dbname";
 if (mysqli_query($con,$sql))
 {
-    printf("<p>Database '$databaseName' created successfully.");
+    printf("<p>Database '$dbname' created successfully.");
 }
 else
 {
@@ -42,7 +39,7 @@ else
 }
 
 // Select database
-mysqli_select_db($con, $databaseName);
+mysqli_select_db($con, $dbname);
 
 // return name of current default database
 if ($result = mysqli_query($con, "SELECT DATABASE()")) {
@@ -53,56 +50,57 @@ if ($result = mysqli_query($con, "SELECT DATABASE()")) {
 
 // Create table
 $sql="CREATE TABLE $tbl_lunchers (
-  username  varchar(15) NOT NULL,
+  id        int(11) NOT NULL auto_increment,
+  username  varchar(15) NOT NULL default '',
   firstname varchar(20) NOT NULL default '',
   lastname  varchar(20) NOT NULL default '',
-  PRIMARY KEY  (username)
+  PRIMARY KEY  (id)
 )";
 if (!mysqli_query($con,$sql))
 {
-    die("<p>Error creating table: " . mysqli_error($con));
+    die("<p>Error creating table $tbl_lunchers: " . mysqli_error($con));
 }
 
 $sql="CREATE TABLE $tbl_restaurants (
-  rest_id   int(11) NOT NULL auto_increment,
+  id        int(11) NOT NULL auto_increment,
   name      varchar(50) NOT NULL default '',
-  PRIMARY KEY  (rest_id)
+  PRIMARY KEY  (id)
 )";
 if (!mysqli_query($con,$sql))
 {
-    die("Error creating table: " . mysqli_error($con));
+    die("Error creating table $tbl_restaurants: " . mysqli_error($con));
 }
 
 $sql="CREATE TABLE $tbl_lunch_events (
-  lunch_event_id int(11) NOT NULL auto_increment,
+  id             int(11) NOT NULL auto_increment,
   rest_id        int(11) NOT NULL default '0',
-  time           datetime,
+  time           date,
   bill           decimal(10,2) NOT NULL default '0',
   totalpaid      decimal(10,2) NOT NULL default '0',
   fund           decimal(10,2) NOT NULL default '0',
-  fundholder     varchar(15) NOT NULL default '',
-  submitter      varchar(15) NOT NULL default '',
-  PRIMARY KEY  (lunch_event_id),
-  FOREIGN KEY  (rest_id)    REFERENCES restaurants(rest_id),
-  FOREIGN KEY  (fundholder) REFERENCES lunchers(username),
-  FOREIGN KEY  (submitter)  REFERENCES lunchers(username)
+  fundholder     int(11) NOT NULL default '0',
+  submitter      int(11) NOT NULL default '0',
+  PRIMARY KEY  (id),
+  FOREIGN KEY  (rest_id)    REFERENCES $tbl_restaurants(id),
+  FOREIGN KEY  (fundholder) REFERENCES $tbl_lunchers(id),
+  FOREIGN KEY  (submitter)  REFERENCES $tbl_lunchers(id)
 )";
 if (!mysqli_query($con,$sql))
 {
-    die("<p>Error creating table: " . mysqli_error($con));
+    die("<p>Error creating table $tbl_lunch_events: " . mysqli_error($con));
 }
 
 $sql="CREATE TABLE $tbl_lunch_event_lookup (
   lunch_event_id  int(11) NOT NULL default '0',
-  username        varchar(15) NOT NULL default '',
+  luncher_id      int(11) NOT NULL default '0',
   multiplier      tinyint(4) NOT NULL default '1',
-  PRIMARY KEY  (lunch_event_id, username),
-  FOREIGN KEY  (lunch_event_id) REFERENCES lunch_events(lunch_event_id),
-  FOREIGN KEY  (username)       REFERENCES lunchers(username)
+  PRIMARY KEY  (lunch_event_id, luncher_id),
+  FOREIGN KEY  (lunch_event_id) REFERENCES $tbl_lunch_events(id),
+  FOREIGN KEY  (luncher_id)     REFERENCES $tbl_lunchers(id)
 )";
 if (!mysqli_query($con,$sql))
 {
-    die("<p>Error creating table: " . mysqli_error($con));
+    die("<p>Error creating table $tbl_lunch_event_lookup: " . mysqli_error($con));
 }
 
 printf("<p>All tables created successfully!");

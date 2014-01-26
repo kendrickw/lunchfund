@@ -5,15 +5,15 @@ This a mobile app optimized for iOS and Android OS. Other mobile devices may wor
 
 Getting Started
 ---------------
-The [zipball of latest release](https://github.com/kendrickw/lunchfund/archive/master.zip) contains *index.html* and all the javascripts require to load it. Simply download it and extract the content in the webserver. Once extracted, load the *index.html* page to start the application.
+The [zipball of latest release](https://github.com/kendrickw/lunchfund/archive/master.zip) contains *index.php* and all the javascripts require to load it. Simply download it and extract the content in the webserver. Once extracted, load the *index.php* page to start the application.
 
 Features
 --------
 
-* Pulls list of attendees from google spreadsheet
+* MYSQL database to store data entries
+* Pulls list of attendees from MYSQL
 * Pulls share information from google spreadsheet
 * Calculate lunch fund automatically using number of attendees and bill amount
-* Keep tracks of submitter in the google spreadsheet
 
 Why not native app?
 -------------------
@@ -23,7 +23,6 @@ Everything we want to accomplish so far can be done via a web app.  Some of the 
 Possible Future Work
 --------------------
 
-* Moving backend piece from google spreadsheet to mySQL on webserver
 * Build native app (maybe needed for performance anyways)
 
 Issues
@@ -41,4 +40,4 @@ None at the moment.
 License
 -------
 
-Copyright 2013 Lunch Fund Group
+Copyright 2013, 2014 Lunch Fund Group

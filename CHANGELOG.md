@@ -1,6 +1,16 @@
 # ChangeLog
 
 ---
+### 1.0.0
+* Implement SQL backend
+* still submit entry to google spreadsheet as a backup
+* php/dbCreate.php for creating initial database
+* php/dbPopulateTables.php for transferring google spreadsheet data (.csv) into database
+* Move up the Jquery mobile 1.4.0
+* Disallow duplicate entries to be inserted into database
+* Summary tab to show book and market value (still grabbing data from google)
+* Reduce size of .css by customizing theme swatch (only 4 now)
+* Minimized version of lunchfund.js
 
 ### 0.9.2
 * Summary tab reflects data from official spreadsheet.

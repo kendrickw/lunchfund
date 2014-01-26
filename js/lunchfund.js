@@ -2,17 +2,17 @@
 /*jslint devel: true*/
 /*global $, jQuery, Modernizr*/
 
-// Global variables storing information collected from Google spreadsheet
-// These values are cached in local storage, so they don't need to be
-// retrieved from Google Spreadsheet all the time.
-var namelist       = null;   // List of shareholder names
-var share          = null;   // share information (key: shareholder name)
-var fund_bookvalue = 0;
-var total_shares   = 0;
+// Google spreadsheet vital info
+var googleFormGETURL = "https://spreadsheets.google.com/feeds/cells/0Av83aWCuOImRdDA5cFVBd2hlbnhvYnhkQmJMNUhHYXc/od7/public/basic?alt=json-in-script&callback=?";
+var googleFormPOSTURL = "https://docs.google.com/forms/d/1hGfAw3GT5YbiTWlNqZhMBAsx2fJ6Jnt5mmhg_8VJLs0/formResponse";
+var googleAttendee = "entry.598889479";
+var googleLunchFund = "entry_1892695599";
+var googleFundHolder = "entry.960282559";
+var googleSubmitter = "entry_1745174688";
+var googleEventDate = "entry_472715279";
 
 // Global variables for storing information obtained from app
 // These values are also cached in local storage.
-var attendee       = null;
 var submitter;
 var showSubmitter;
 
@@ -24,9 +24,13 @@ var amountToPay = 0;
 var eachPays = 0;
 var lunchFundAmount = 0;
 
-// GLobal variables for keeping track of various state
+// Other Global variables
+var namelist        = [];   // List of all shareholder names
+var attendee        = [];   // List of attendees
 var attendeeChanged = false;
+var tadaSound;              // TADA! audio element
 
+// Functions for manipulating with local storage/cookie
 function localStorageSetItem(name, value) {
     "use strict";
     if (Modernizr.localstorage) {
@@ -51,18 +55,11 @@ function getDate() {
 }
 
 //*******************************************************************
-// Create the google form <input> html array base on shareholders list
-// <input type="checkbox" style="display:none;" name="entry.0.group" value="Ka" id="Gform_#">
+// Create the submission form <input> html array base on shareholders list
+// <input type="checkbox" style="display:none;" name="SF_Names[]" value="Ka" id="SF_Name#">
 // This only needs to be performed once
 //*******************************************************************
-var google_form_input_name       = "entry.598889479";
-var google_form_input_id_pfx     = "gform_";
-var google_form_lunchfund_id     = "entry_1892695599";
-var google_form_whoholdsmoney_id = "entry_960282559";
-var google_form_submittername_id = "entry_1745174688";
-var google_form_eventdate_id     = "entry_472715279";
-
-function drawGoogleFormChkBox(element) {
+function drawSubmissionFormChkBox(element) {
     "use strict";
     var chkboxlist = "",
         i = 0,
@@ -70,9 +67,9 @@ function drawGoogleFormChkBox(element) {
     while (i < len) {
         chkboxlist +=
             '<input type="checkbox" style="display:none;"' +
-            ' name="' + google_form_input_name + '"' +
+            ' name="SF_Names[]"' +
             ' value="' + namelist[i] + '"' +
-            ' id="' + google_form_input_id_pfx + i + '"/>\n';
+            ' id="SF_Name' + i + '"/>\n';
         i += 1;
     }
 
@@ -81,14 +78,16 @@ function drawGoogleFormChkBox(element) {
     // No need to trigger create, since this is not rendered on screen anyways
 }
 
+// NOT NEEDED BECAUSE OF MYSQL SUPPORT
 //*******************************************************************
 // Create the app checkbox <input> html array base on shareholders list
 // This only needs to be done once at the beginning
 // <input type="checkbox" id="chkbox_#" name="Ka" checked="checked">
-// <label for="chkbox_Ka">
+// <label for="chkbox_#">
 //   Ka
 // </label>
 //*******************************************************************
+/*
 function drawAppFormChkBox(element) {
     "use strict";
     var chkboxlist = "",
@@ -111,11 +110,14 @@ function drawAppFormChkBox(element) {
             '</label>\n';
         i += 1;
     }
-    
-    element.empty();
-    element.append(chkboxlist);
-    element.parent().trigger('create');
+
+    element.controlgroup("container").append(chkboxlist);
+    for (i = 0; i < len; i += 1) {
+        $('#chkbox_' + i).checkboxradio();
+    }
+    element.controlgroup("refresh");
 }
+*/
 
 //*******************************************************************
 // Create the <option> html array base on selectlist
@@ -190,6 +192,12 @@ function getEventDate() {
     }
 }
 
+// Return Event Location
+function getEventLocation() {
+    "use strict";
+    return null;  // NOT IMPLEMENTED YET
+}
+
 // Fill in the text for Participant List button
 function drawParticipantText() {
     "use strict";
@@ -213,7 +221,7 @@ function drawParticipantText() {
 //*******************************************************************
 
 // Populate Attendee list to Google Doc checkboxes
-function syncGoogleCheckboxes() {
+function syncSubFormCheckboxes() {
     "use strict";
 
     var i = 0,
@@ -224,56 +232,66 @@ function syncGoogleCheckboxes() {
 
     while (i < len) {
         name = namelist[i];
-        input_idname = google_form_input_id_pfx + i;
+        input_idname = "SF_Name" + i;
         input_elem = $("#" + input_idname);
 
         if ($.inArray(name, attendee) !== -1) {
             input_elem.attr('checked', 'checked');
-            // console.log (name + "(" + input_idname + ") checked");
+            // console.log(name + "(" + input_idname + ") checked");
         } else {
             input_elem.removeAttr('checked');
+            // console.log(name + "(" + input_idname + ") unchecked");
         }
         i += 1;
     }
 }
 
-function syncGoogleLunchFundAmount() {
+function syncSubFormBillAmount() {
     "use strict";
-    var element = $("#" + google_form_lunchfund_id);
+    $("#SF_BillAmount").attr('value', billAmount);
+    //console.log ("BillAmount: " + billAmount);
+}
 
-    element.attr('value', lunchFundAmount);
+function syncSubFormTotalPaid() {
+    "use strict";
+    $("#SF_TotalPaid").attr('value', amountToPay);
+    //console.log ("TotalPaid: " + amountToPay);
+}
+
+function syncSubFormLunchFundAmount() {
+    "use strict";
+    $("#SF_LunchFund").attr('value', lunchFundAmount);
     //console.log ("LunchFund: " + lunchFundAmount);
 }
 
-function syncGoogleWhoHoldsMoney() {
+function syncSubFormWhoHoldsMoney() {
     "use strict";
-    var element = $("#" + google_form_whoholdsmoney_id);
-
-    element.attr('value', getLunchFundHolder());
+    $("#SF_FundHolder").attr('value', getLunchFundHolder());
     //console.log ("LunchFundHolder: " + getLunchFundHolder());
 }
 
-function syncGoogleSubmitterName() {
+function syncSubFormSubmitterName() {
     "use strict";
-    var element = $("#" + google_form_submittername_id);
-
-    element.attr('value', submitter);
+    $("#SF_Submitter").attr('value', submitter);
     //console.log ("submitter: " + submitter);
 }
 
-function syncGoogleEventDate() {
+function syncSubFormEventDate() {
     "use strict";
-    var element = $("#" + google_form_eventdate_id);
-
-    element.attr('value', getEventDate());
+    $("#SF_EventDate").attr('value', getEventDate());
     //console.log ("event Date: " + getEventDate());
 }
 
-// Sync all google form related fields
-// This is the action that is perform when the google form is submitted
-// Should do all error check here
+function syncSubFormEventLocation() {
+    "use strict";
+    $("#SF_EventLocation").attr('value', getEventLocation());
+    //console.log ("event Date: " + getEventLocation());
+}
+
+// Sync all submission form related fields
+// This is the form validation logic
 // If error check fails, then return false
-function syncGoogleForm() {
+function syncSubmissionForm() {
     "use strict";
     if (attendee.length === 0) {
         alert("You must select at least one luncher.");
@@ -295,28 +313,17 @@ function syncGoogleForm() {
         return false;
     }
 
-    // All is good, go ahead and fill in the google form
-    syncGoogleCheckboxes();
-    syncGoogleLunchFundAmount();
-    syncGoogleWhoHoldsMoney();
-    syncGoogleSubmitterName();
-    syncGoogleEventDate();
+    // All is good, go ahead and fill in the submission form
+    syncSubFormCheckboxes();
+    syncSubFormBillAmount();
+    syncSubFormTotalPaid();
+    syncSubFormLunchFundAmount();
+    syncSubFormWhoHoldsMoney();
+    syncSubFormSubmitterName();
+    syncSubFormEventDate();
+    syncSubFormEventLocation();
 
-    // Show busy indicator
-    $.mobile.loading('show');
     return true;
-}
-
-// Perform these actions when google form is successfully submitted
-function submittedGoogleForm() {
-    "use strict";
-    // Hide busy indicator
-    $.mobile.loading('hide');
-
-    alert("Submitted to Google Doc successfully.");
-
-    //Re-direct back to main page
-    //$.mobile.changePage( "#homePage", { transition: "none"} );
 }
 
 //**************************************
@@ -404,7 +411,7 @@ function formatMoney(val) {
 }
 
 // Create piechart base on input name list
-function drawPieChart(inputnamelist) {
+function drawPieChart(inputnamelist, share) {
     "use strict";
     $(function () {
         var piechart_data = [],
@@ -470,30 +477,34 @@ function jsonReadGoogleSpreadsheet(callbackfunc) {
     // Enable busy indicator
     $.mobile.loading('show');
 
-    $.getJSON("https://spreadsheets.google.com/feeds/cells/0Av83aWCuOImRdDA5cFVBd2hlbnhvYnhkQmJMNUhHYXc/od7/public/basic?alt=json-in-script&callback=?", function (data) {
+    $.getJSON(googleFormGETURL, function (data) {
         var owner_row = 0,        // spreadsheet row containing owner name
             shares_row = 0,       // spreadsheet row containing # of shares
             bookvalue_row = 0,    // spreadsheet row containing 'Current Fund Book Value'
+            marketvalue_row = 0,  // spreadsheet row containing 'Current Fund Market Value'
             totalshare_row = 0,   // spreadsheet row containing 'Total outstanding shares'
             name_idx,
             cell,
-            value;
-
-        // Initialize the global variables
-        namelist       = [];   // List of shareholder names
-        share          = {};   // share information (key: shareholder name)
-        fund_bookvalue = 0;
-        total_shares   = 0;
+            value,
+            gnamelist = [],     // List of shareholder names
+            gshare = {},        // share information (key: shareholder name)
+            gfund_bookvalue = 0,
+            gfund_marketvalue = 0,
+            gtotal_shares = 0;
 
         //console.log(data);
         $.each(data.feed.entry, function (i, entry) {
             cell  = entry.title.$t;
             value = entry.content.$t;
 
-            if (cell[0] === 'A') {
-                if (bookvalue_row === 0 && value === 'Current Fund Book Value') {
+            if (cell[0] === 'C') {
+                if (marketvalue_row === 0 && value === 'Fund Current Total Market Value') {
+                    marketvalue_row = cell.substr(1);
+                }
+            } else if (cell[0] === 'A') {
+                if (bookvalue_row === 0 && value === 'Fund Current Total Book Value') {
                     bookvalue_row = cell.substr(1);
-                } else if (totalshare_row === 0 && value === 'Total outstanding shares') {
+                } else if (totalshare_row === 0 && value === 'Total number of outstanding shares') {
                     totalshare_row = cell.substr(1);
                 } else if (owner_row === 0 && value === 'Owner') {
                     owner_row  = cell.substr(1);
@@ -502,14 +513,16 @@ function jsonReadGoogleSpreadsheet(callbackfunc) {
                     name_idx = 0;
                 }
             } else {
-                if (cell.substr(1) === bookvalue_row) {
-                    fund_bookvalue = value;
-                } else if (cell.substr(1) === totalshare_row) {
-                    total_shares = value;
+                if (cell.substr(1) === marketvalue_row) {
+                    gfund_marketvalue = value;
+                } else if (gfund_bookvalue === 0 && cell.substr(1) === bookvalue_row) {
+                    gfund_bookvalue = value;
+                } else if (gtotal_shares === 0 && cell.substr(1) === totalshare_row) {
+                    gtotal_shares = value;
                 } else if (cell.substr(1) === owner_row) {
-                    namelist.push(value);
+                    gnamelist.push(value);
                 } else if (cell.substr(1) === shares_row) {
-                    share[namelist[name_idx]] = value;
+                    gshare[gnamelist[name_idx]] = value;
                     name_idx += 1;
                 }
             }
@@ -519,32 +532,58 @@ function jsonReadGoogleSpreadsheet(callbackfunc) {
         localStorageSetItem('timeofstat', Date());
 
         // Sort the shareholder namelist by descending share #
-        namelist.sort(function (a, b) {
-            var a1 = parseFloat(share[a]),
-                b1 = parseFloat(share[b]);
+        gnamelist.sort(function (a, b) {
+            var a1 = parseFloat(gshare[a]),
+                b1 = parseFloat(gshare[b]);
             if (a1 === b1) {
                 return 0;
             }
             return a1 < b1 ? 1 : -1;
         });
 
-        localStorageSetItem('namelist', JSON.stringify(namelist));
-        localStorageSetItem('share', JSON.stringify(share));
-        localStorageSetItem('fund_bookvalue', fund_bookvalue);
-        localStorageSetItem('total_shares', total_shares);
+        localStorageSetItem('share', JSON.stringify(gshare));
+        localStorageSetItem('fund_marketvalue', gfund_marketvalue);
+        localStorageSetItem('fund_bookvalue', gfund_bookvalue);
+        localStorageSetItem('total_shares', gtotal_shares);
 
         /*
-    // Display the sorted information
-    console.log ("Current Fund Book Value: " + fund_bookvalue);
-    console.log ("Total outstanding shares: " + total_shares);
-    $.each(namelist, function (i, name) {
-      console.log (i + ": " + name + ", share:" + share[name]);
-    });
-   */
+        // Display the sorted information
+        console.log("Current Fund Book Value: " + gfund_bookvalue);
+        console.log("Current Fund Market Value: " + gfund_marketvalue);
+        console.log("Total outstanding shares: " + gtotal_shares);
+        $.each(namelist, function (i, name) {
+            console.log(i + ": " + name + ", share:" + gshare[name]);
+        });
+        */
 
         // Disable busy indicator
         $.mobile.loading('hide');
         callbackfunc();
+    });
+}
+
+// Submit FORM to google spread sheet
+// element is the ID containing the FORM to be submitted
+function postFormToGoogle() {
+    "use strict";
+    // Need to change the form data to satisfy what google expects
+    var googleFormData = $('#submissionForm').serialize();
+    googleFormData = googleFormData.replace(/SF_Names%5B%5D/g, googleAttendee);
+    googleFormData = googleFormData.replace(/SF_LunchFund/,    googleLunchFund);
+    googleFormData = googleFormData.replace(/SF_FundHolder/,   googleFundHolder);
+    googleFormData = googleFormData.replace(/SF_Submitter/,    googleSubmitter);
+    googleFormData = googleFormData.replace(/SF_EventDate/,    googleEventDate);
+    // console.log(googleFormData);
+
+    $.post(googleFormPOSTURL, googleFormData, function () {
+        // sucesss
+    }).fail(function (data) {
+        // It always fails due to Access-Control-Allow-Origin restriction.
+        // i.e. phil website -> docs.google.com is not allowed.
+        // But the spreadsheet update seems to go through.
+        // console.log(data);
+    }).always(function () {
+        // alert("Submitted to Google Doc successfully.");
     });
 }
 
@@ -597,30 +636,22 @@ window.applicationCache.addEventListener(
 //*******************************************************************
 
 // Initialize attendee list
-// If local storage exists, use it.  Otherwise
-// get the information from the top 5 shareholders
+// base on the checked box in '#peoplelistcheckboxes'
 function initAttendeeList() {
     "use strict";
-    if (attendee === null) {
-        attendee = JSON.parse(localStorageGetItem('attendee'));
+    if (namelist.length !== 0) {
+        attendee.splice(0);
+    }
+    if (attendee.length !== 0) {
+        attendee.splice(0);
     }
 
-    if (attendee === null) {
-        attendee = [];
-        // Mark top 5 shareholders as default attendee
-        var i = 0,
-            len = namelist.length;
-        if (len > 5) {
-            len = 5;
+    $('#peoplelistcheckboxes :checkbox').each(function () {
+        namelist.push($(this).attr('name'));
+        if ($(this).is(':checked')) {
+            attendee.push($(this).attr('name'));
         }
-        while (i < len) {
-            attendee.push(namelist[i]);
-            i += 1;
-        }
-
-        // Cache the attendee list
-        localStorageSetItem('attendee', JSON.stringify(attendee));
-    }
+    });
 }
 
 // Pre-DOM manipulation code. Fire once per application
@@ -638,13 +669,9 @@ $(document).on('pagecreate', '#homePage', function () {
     if (showSubmitter === null) {
         showSubmitter = 1;
     }
-    share = JSON.parse(localStorageGetItem('share'));
-    fund_bookvalue = localStorageGetItem('fund_bookvalue');
-    total_shares = localStorageGetItem('total_shares');
 
-    if (namelist === null) {
-        namelist = JSON.parse(localStorageGetItem('namelist'));
-    }
+    // Preload MP3s, doesn't seem to work on iphone
+    tadaSound = document.getElementById('tadaAudio');
 
     // Event driven code
     $('#billamountinput').keyup(function () {
@@ -704,6 +731,44 @@ $(document).on('pagecreate', '#homePage', function () {
         }
     });
 
+    // Form submission validation
+    $('#submissionForm').submit(function (event) {
+        // Sync/Validate submission form
+
+        if (syncSubmissionForm()) {
+            // Show busy indicator
+            $.mobile.loading('show');
+
+            // Submit to MYSQL
+            $.post('php/dbAddEvent.php', $(this).serialize(), function (data) {
+                if (data.status === 'success') {
+                    // "tada" sound on submit courtesy of filo
+                    tadaSound.play();
+
+                    // Post data to google spreadsheet
+                    postFormToGoogle();
+
+                    alert("Submitted Successfully");
+                } else {
+                    // Failed, error feedback
+                    // console.log(data.status);
+                    // console.log(data.message);
+
+                    // uh oh sound would be nice here.
+                    alert('ERROR: ' + data.message);
+                }
+            }, 'json');
+
+            // Stop busy indicator
+            $.mobile.loading('hide');
+        }
+
+        // Stop form from submitting because we are POSTing manually.
+        event.preventDefault();
+
+        //Re-direct to other page?
+        //$.mobile.changePage( "#homePage", { transition: "none"} );
+    });
 });
 
 // Post-DOM manipulation code. Fire once per application
@@ -716,34 +781,15 @@ $(document).on('pageinit', '#homePage', function () {
         numInput.setAttribute('type', 'text');
     }
 
-    if (namelist === null) {
-        // Show initial text in the luncher selection box
-        $("#participantcounttext").text(0);
-        $("#participantlisttext").text(".. Refreshing List ..");
+    initAttendeeList();
 
-        jsonReadGoogleSpreadsheet(function () {
-            initAttendeeList();
+    drawParticipantText();
+    calculate_using_billAmount(billAmount, attendee.length);
+    drawAllAmountsText();
 
-            drawParticipantText();
-            calculate_using_billAmount(billAmount, attendee.length);
-            drawAllAmountsText();
-
-            drawSelectMenu($('#fundholderselect'), attendee, getLunchFundHolder());
-            drawSelectMenu($('#submitterselect'), attendee, submitter);
-            drawGoogleFormChkBox($("#googleforminput"));
-        });
-    } else {
-        initAttendeeList();
-
-        drawParticipantText();
-        calculate_using_billAmount(billAmount, attendee.length);
-        drawAllAmountsText();
-
-        drawSelectMenu($('#fundholderselect'), attendee, getLunchFundHolder());
-        drawSelectMenu($('#submitterselect'), attendee, submitter);
-        drawGoogleFormChkBox($("#googleforminput"));
-    }
-
+    drawSelectMenu($('#fundholderselect'), attendee, getLunchFundHolder());
+    drawSelectMenu($('#submitterselect'), attendee, submitter);
+    drawSubmissionFormChkBox($("#submissionforminput"));
 });
 
 // Every time the page is shown, this function will be triggered.
@@ -756,9 +802,6 @@ $(document).on('pageshow', '#homePage', function () {
     }
 
     if (attendeeChanged === true) {
-        // Save current attendee list
-        localStorageSetItem('attendee', JSON.stringify(attendee));
-
         // Redraw all elements that may change due to attendee list changes
         drawParticipantText();
         calculate_using_billAmount(billAmount, attendee.length);
@@ -781,15 +824,6 @@ $(document).on('pageshow', '#homePage', function () {
 //   - Event driven code
 $(document).on('pagecreate', '#peoplePage', function () {
     "use strict";
-});
-
-// Post-DOM manipulation code. Fire once per application
-$(document).on('pageinit', '#peoplePage', function () {
-    "use strict";
-    drawAppFormChkBox($("#peoplelistcheckboxes"));
-
-    // This event can only be placed here, because the checkboxes are
-    // drawn in pageinit code.
     $('#peoplelistcheckboxes input:checkbox').change(function () {
         attendeeChanged = true;
     });
@@ -808,6 +842,11 @@ $(document).on('pageinit', '#peoplePage', function () {
     });
 });
 
+// Post-DOM manipulation code. Fire once per application
+$(document).on('pageinit', '#peoplePage', function () {
+    "use strict";
+});
+
 //*******************************************************************
 // SETTING PAGE event handler
 //*******************************************************************
@@ -821,11 +860,10 @@ $(document).on('pagecreate', '#settingsPage', function () {
     $('#clearlocalstoragebutton').click(function () {
         localStorage.removeItem('submitter');
         localStorage.removeItem('showSubmitter');
-        localStorage.removeItem('attendee');
 
-        localStorage.removeItem('namelist');
         localStorage.removeItem('share');
         localStorage.removeItem('fund_bookvalue');
+        localStorage.removeItem('fund_marketvalue');
         localStorage.removeItem('total_shares');
         localStorage.removeItem('timeofstat');
 
@@ -883,24 +921,39 @@ $(document).on('pageshow', '#settingsPage', function () {
 
 $(document).on('pagecreate', '#summaryPage', function () {
     "use strict";
-    $("#fundvaluetext").text(" .. refreshing .. ");
+    $("#fundbookvaluetext").text(" .. refreshing .. ");
 });
 
 $(document).on('pageshow', '#summaryPage', function () {
     "use strict";
+    var share = JSON.parse(localStorageGetItem('share')),
+        fund_bookvalue = localStorageGetItem('fund_bookvalue'),
+        fund_marketvalue = localStorageGetItem('fund_marketvalue'),
+        total_shares = localStorageGetItem('total_shares'),
+        submitter_share,
+        submitter_shareratio,
+        fundvalue,
+        submitter_sharevalue;
+
     $('#timeofstat').text(localStorageGetItem('timeofstat'));
-    $("#fundvaluetext").text(fund_bookvalue);
+    $("#fundbookvaluetext").text(fund_bookvalue);
+    $("#fundmarketvaluetext").text(fund_marketvalue);
     if (submitter === null) {
         $('#submittersharetext').text('Specify Submitter');
         $('#submittersharevaluetext').text('N/A');
     } else {
-        var submitter_share = parseFloat(share[submitter]),
-            submitter_shareratio = submitter_share / total_shares,
-            fundvalue = parseFloat(fund_bookvalue.substr(1)),
-            submitter_sharevalue = fundvalue * submitter_shareratio;
+        submitter_share = parseFloat(share[submitter]);
+        submitter_shareratio = submitter_share / total_shares;
+        fundvalue = parseFloat(fund_marketvalue.substr(1));
+        submitter_sharevalue = fundvalue * submitter_shareratio;
         $('#submittersharetext').text(submitter_share.toFixed(2));
         $('#submittersharevaluetext').text('$' + submitter_sharevalue.toFixed(2));
     }
 
-    drawPieChart(attendee);
+    if (share === null) {
+        $("#fundbookvaluetext").text('Go to Settings Page');
+        $("#fundmarketvaluetext").text('And Refresh Data from Google');
+    } else {
+        drawPieChart(attendee, share);
+    }
 });
