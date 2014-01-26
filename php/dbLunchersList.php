@@ -1,6 +1,8 @@
 <?php
-
-include "dbParms.php";
+// ------------------------------------------
+// Retrieve list of lunchers
+// ------------------------------------------
+require "dbParms.php";
 
 // The first few attendee gets automatically checked
 $defaultAttendee = 5;

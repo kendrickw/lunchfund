@@ -5,7 +5,27 @@ This a mobile app optimized for iOS and Android OS. Other mobile devices may wor
 
 Getting Started
 ---------------
-The [zipball of latest release](https://github.com/kendrickw/lunchfund/archive/master.zip) contains *index.php* and all the javascripts require to load it. Simply download it and extract the content in the webserver. Once extracted, load the *index.php* page to start the application.
+
+The [zipball of latest release](https://github.com/kendrickw/lunchfund/archive/master.zip) contains *index.php* and all the javascripts/php scripts that the application needs.
+
+There is a server side (MYSQL, PHP), and a client side (javascripts, htmls).
+Once you have downloaded the zipball and extracted the content to the root of the webserver, the directory structure should look like:
+* audio
+* css
+* images
+* jquery
+* js
+* php
+* index.php
+
+On the server side, you must have MYSQL server and PHP installed:
+* Modify *php/dbParms.php* to match the username and password to the MYSQL database.
+* To create the initial database, run *php/dbCreate.php*
+* To populate the database with data from google spreadsheet, first export the spreadsheet as .csv file, and then run *php/dbPopulateTables.php*
+* Move these setup php files to a location outside the webserver since you don't want other people to accidentally run these files.
+* It is advisable to create a user account in MYSQL with SELECT, INSERT, UPDATE privileges only. (And update *php/dbParms.php* with the new user account)
+
+On the client side, simply navigate to *index.php* from your web browser.
 
 Features
 --------

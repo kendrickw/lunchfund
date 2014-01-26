@@ -2,7 +2,7 @@
 // ------------------------------------------
 // Adding a lunch event to the MYSQL database
 // ------------------------------------------
-include "dbParms.php";
+require "dbParms.php";
 
 // Return code structure
 $rc["status"]  = 'success';
