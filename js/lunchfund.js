@@ -30,7 +30,7 @@ var attendee        = [];   // List of attendees
 var attendeeChanged = false;
 var tadaSound;              // TADA! audio element
 
-// Functions for manipulating with local storage/cookie
+// Functions for manipulating with local storage
 function localStorageSetItem(name, value) {
     "use strict";
     if (Modernizr.localstorage) {
@@ -151,6 +151,24 @@ function drawSelectMenu(selectelement, selectlist, selected) {
     selectelement.selectmenu('refresh');
 }
 
+// Fill in the text for Participant List button
+function drawParticipantText() {
+    "use strict";
+    var selected = attendee.slice(),    // clone array
+        num      = selected.length,
+        listverbosetext;                // i.e. No Luncher; Mike,Phil
+
+    // Form the "n Participant(s)" text
+    if (num === 0) {
+        listverbosetext  = "No Luncher";
+    } else {
+        listverbosetext  = selected.join(", ");
+    }
+
+    $("#participantcounttext").text(num);
+    $("#participantlisttext").text(listverbosetext);
+}
+
 //*******************************************************************
 // Functions for retrieving information from user input
 //*******************************************************************
@@ -196,24 +214,6 @@ function getEventDate() {
 function getEventLocation() {
     "use strict";
     return null;  // NOT IMPLEMENTED YET
-}
-
-// Fill in the text for Participant List button
-function drawParticipantText() {
-    "use strict";
-    var selected = attendee.slice(),    // clone array
-        num      = selected.length,
-        listverbosetext;                // i.e. No Luncher; Mike,Phil
-
-    // Form the "n Participant(s)" text
-    if (num === 0) {
-        listverbosetext  = "No Luncher";
-    } else {
-        listverbosetext  = selected.join(", ");
-    }
-
-    $("#participantcounttext").text(num);
-    $("#participantlisttext").text(listverbosetext);
 }
 
 //*******************************************************************
@@ -483,7 +483,7 @@ function jsonReadGoogleSpreadsheet(callbackfunc) {
             bookvalue_row = 0,    // spreadsheet row containing 'Current Fund Book Value'
             marketvalue_row = 0,  // spreadsheet row containing 'Current Fund Market Value'
             totalshare_row = 0,   // spreadsheet row containing 'Total outstanding shares'
-            name_idx,
+            name_idx = 0,
             cell,
             value,
             gnamelist = [],     // List of shareholder names
@@ -685,6 +685,9 @@ $(document).on('pagecreate', '#homePage', function () {
         billAmount = $(this).val();
         calculate_using_billAmount(billAmount, attendee.length);
         drawAllAmountsText();
+
+        // Re-activate submit button if new bill amount is entered
+        $('#submitButton').button('enable');
     });
 
     $('#billamountinput').focus(function () {
@@ -734,7 +737,6 @@ $(document).on('pagecreate', '#homePage', function () {
     // Form submission validation
     $('#submissionForm').submit(function (event) {
         // Sync/Validate submission form
-
         if (syncSubmissionForm()) {
             // Show busy indicator
             $.mobile.loading('show');
@@ -749,6 +751,9 @@ $(document).on('pagecreate', '#homePage', function () {
                     postFormToGoogle();
 
                     alert("Submitted Successfully");
+
+                    // Prevent Double submission
+                    $('#submitButton').button('disable');
                 } else {
                     // Failed, error feedback
                     // console.log(data.status);
@@ -758,10 +763,10 @@ $(document).on('pagecreate', '#homePage', function () {
                     alert('ERROR: ' + data.message);
                 }
             }, 'json');
-
-            // Stop busy indicator
-            $.mobile.loading('hide');
         }
+
+        // Stop busy indicator
+        $.mobile.loading('hide');
 
         // Stop form from submitting because we are POSTing manually.
         event.preventDefault();
@@ -784,7 +789,6 @@ $(document).on('pageinit', '#homePage', function () {
     initAttendeeList();
 
     drawParticipantText();
-    calculate_using_billAmount(billAmount, attendee.length);
     drawAllAmountsText();
 
     drawSelectMenu($('#fundholderselect'), attendee, getLunchFundHolder());
@@ -858,15 +862,7 @@ $(document).on('pageinit', '#peoplePage', function () {
 $(document).on('pagecreate', '#settingsPage', function () {
     "use strict";
     $('#clearlocalstoragebutton').click(function () {
-        localStorage.removeItem('submitter');
-        localStorage.removeItem('showSubmitter');
-
-        localStorage.removeItem('share');
-        localStorage.removeItem('fund_bookvalue');
-        localStorage.removeItem('fund_marketvalue');
-        localStorage.removeItem('total_shares');
-        localStorage.removeItem('timeofstat');
-
+        localStorage.clear();
         alert('Local Storage Removed, You must restart the app now');
     });
 

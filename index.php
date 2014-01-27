@@ -34,8 +34,8 @@
         <link rel="stylesheet" type="text/css" href="jquery/jqm-datebox-1.2.0.min.css" />
         <link rel="stylesheet" type="text/css" href="css/lunchfund_global.css" />
 
-        <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-        <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
         <script type="text/javascript" src="jquery/jqm-datebox-1.2.0.comp.calbox.min.js"></script>
         <script type="text/javascript" src="jquery/jquery.formatCurrency-1.4.0.min.js"></script>
         <script type="text/javascript" src="jquery/jquery.flot.js"></script>
@@ -145,42 +145,28 @@ data-theme="a"(normal), "b"(black), "c"(yellow) "d"(blue)
 
                 </ul>
 
-                <!-- Submission Dialog -->
-                <table style="width: 100%">
-                    <!-- Fund holder -->
-                    <tr>
-                        <td style="width: 30%">
-                            <label for="fundholderselect">
-                                Fund Holder:
-                            </label>
-                        </td>
-                        <td>
-                            <select id="fundholderselect">
-                                <!-- Dynamically created content. Populated by drawSelectMenu() -->
-                            </select>
-                        </td>
-                    </tr>
-
-                    <!-- Submitter Name -->
-                    <tr id="submitterfield">
-                        <td style="width: 30%">
-                            <label for="submitterselect">
-                                Submitter:
-                            </label>
-                        </td>
-                        <td>
-                            <select id="submitterselect">
-                                <!-- Dynamically created content. Populated by drawSelectMenu() -->
-                            </select>
-                        </td>
-                    </tr>
-                </table>
+                <!-- Fund Holder, Submitter -->
+                <div class="ui-field-contain">
+                    <fieldset data-role="controlgroup">
+                        <legend>Fund Holder:</legend>
+                        <select id="fundholderselect">
+                            <!-- Dynamically created content. Populated by drawSelectMenu() -->
+                        </select>
+                    </fieldset>
+                    <fieldset data-role="controlgroup" id="submitterfield">
+                        <legend>Submitter:</legend>
+                        <select id="submitterselect">
+                            <!-- Dynamically created content. Populated by drawSelectMenu() -->
+                        </select>
+                    </fieldset>
+                </div>
 
                 <!-- Form submission logic -->
                 <!-- No action because javascript is doing the actual POST -->
                 <!-- data-ajax="false" -->
                 <form method="POST" id="submissionForm"
                       enctype="multipart/form-data"
+                      data-ajax="false"
                       action="">
                     <div id="submissionforminput">
                         <!-- Dynamically created content. Populated by drawSubmissionFormChkBox() -->
