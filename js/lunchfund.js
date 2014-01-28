@@ -28,7 +28,6 @@ var lunchFundAmount = 0;
 var namelist        = [];   // List of all shareholder names
 var attendee        = [];   // List of attendees
 var attendeeChanged = false;
-var tadaSound;              // TADA! audio element
 
 // Functions for manipulating with local storage
 function localStorageSetItem(name, value) {
@@ -497,29 +496,25 @@ function jsonReadGoogleSpreadsheet(callbackfunc) {
             cell  = entry.title.$t;
             value = entry.content.$t;
 
-            if (cell[0] === 'C') {
-                if (marketvalue_row === 0 && value === 'Fund Current Total Market Value') {
-                    marketvalue_row = cell.substr(1);
-                }
+            //console.log(i + ': cell:' + cell + ', value:' + value);
+            if (cell === 'B2') {
+                // Fund Current Total Book Value
+                gfund_bookvalue = value;
+            } else if (cell === 'D2') {
+                // Fund Current Total Market Value
+                gfund_marketvalue = value;
+            } else if (cell === 'B3') {
+                // Total number of outstanding shares
+                gtotal_shares = value;
             } else if (cell[0] === 'A') {
-                if (bookvalue_row === 0 && value === 'Fund Current Total Book Value') {
-                    bookvalue_row = cell.substr(1);
-                } else if (totalshare_row === 0 && value === 'Total number of outstanding shares') {
-                    totalshare_row = cell.substr(1);
-                } else if (owner_row === 0 && value === 'Owner') {
-                    owner_row  = cell.substr(1);
+                if (owner_row === 0 && value === 'Owner') {
+                    owner_row = cell.substr(1);
                 } else if (shares_row === 0 && value === 'Number of Shares') {
                     shares_row = cell.substr(1);
                     name_idx = 0;
                 }
             } else {
-                if (cell.substr(1) === marketvalue_row) {
-                    gfund_marketvalue = value;
-                } else if (gfund_bookvalue === 0 && cell.substr(1) === bookvalue_row) {
-                    gfund_bookvalue = value;
-                } else if (gtotal_shares === 0 && cell.substr(1) === totalshare_row) {
-                    gtotal_shares = value;
-                } else if (cell.substr(1) === owner_row) {
+                if (cell.substr(1) === owner_row) {
                     gnamelist.push(value);
                 } else if (cell.substr(1) === shares_row) {
                     gshare[gnamelist[name_idx]] = value;
@@ -670,9 +665,6 @@ $(document).on('pagecreate', '#homePage', function () {
         showSubmitter = 1;
     }
 
-    // Preload MP3s, doesn't seem to work on iphone
-    tadaSound = document.getElementById('tadaAudio');
-
     // Event driven code
     $('#billamountinput').keyup(function () {
         if ($(this).attr('type') === 'text') {
@@ -738,14 +730,11 @@ $(document).on('pagecreate', '#homePage', function () {
     $('#submissionForm').submit(function (event) {
         // Sync/Validate submission form
         if (syncSubmissionForm()) {
-            // Show busy indicator
-            $.mobile.loading('show');
-
             // Submit to MYSQL
             $.post('php/dbAddEvent.php', $(this).serialize(), function (data) {
                 if (data.status === 'success') {
                     // "tada" sound on submit courtesy of filo
-                    tadaSound.play();
+                    document.getElementById('tadaAudio').play();
 
                     // Post data to google spreadsheet
                     postFormToGoogle();
@@ -764,9 +753,6 @@ $(document).on('pagecreate', '#homePage', function () {
                 }
             }, 'json');
         }
-
-        // Stop busy indicator
-        $.mobile.loading('hide');
 
         // Stop form from submitting because we are POSTing manually.
         event.preventDefault();
