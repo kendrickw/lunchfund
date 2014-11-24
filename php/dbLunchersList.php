@@ -9,7 +9,7 @@ $defaultAttendee = 5;
 
 try {
     // Connect to database
-    $DBH = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
+    $DBH = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $user, $pass);
     $DBH->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
     // Create participant list base on past attendence
