@@ -2,7 +2,7 @@
 // ------------------------------------------
 // Retrieve list of lunchers
 // ------------------------------------------
-require "dbParms.php";
+require_once("config/db.php");
 
 // The first few attendee gets automatically checked
 $defaultAttendee = 5;

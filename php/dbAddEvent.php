@@ -2,7 +2,12 @@
 // ------------------------------------------
 // Adding a lunch event to the MYSQL database
 // ------------------------------------------
-require "dbParms.php";
+// Reject any request that did not originate from AJAX
+if($_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest') {
+    exit;
+}
+
+require_once("../config/db.php");
 
 // Return code structure
 $rc["status"]  = 'success';

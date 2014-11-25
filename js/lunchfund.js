@@ -28,6 +28,7 @@ var lunchFundAmount = 0;
 var namelist        = [];   // List of all shareholder names
 var attendee        = [];   // List of attendees
 var attendeeChanged = false;
+var debugmode       = false;      // In debug mode, initialized when page is constructed.
 
 // Functions for manipulating with local storage
 function localStorageSetItem(name, value) {
@@ -655,8 +656,9 @@ function initAttendeeList() {
 //   - Event driven code
 $(document).on('pagecreate', '#homePage', function () {
     "use strict";
-    // Debug traces
-    // console.log('homePage pagecreate');
+
+    // Initialize debug mode
+    debugmode = ($('#debugMode').length !== 0);
 
     // Initialize global variables from local storage
     submitter = localStorageGetItem('submitter');
@@ -745,8 +747,10 @@ $(document).on('pagecreate', '#homePage', function () {
                     $('#submitButton').button('disable');
                 } else {
                     // Failed, error feedback
-                    // console.log(data.status);
-                    // console.log(data.message);
+                    if (debugmode) {
+                        console.log(data.status);
+                        console.log(data.message);
+                    }
 
                     // uh oh sound would be nice here.
                     alert('ERROR: ' + data.message);

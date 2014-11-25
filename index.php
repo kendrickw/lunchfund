@@ -30,12 +30,12 @@
               href="images/splash-ipad-2048-1496.png" />
 
         <link rel="stylesheet" type="text/css" href="css/themes/lunchfund.min.css" />
-        <link rel="stylesheet" type="text/css" href="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.css" />
+        <link rel="stylesheet" type="text/css" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css" />
         <link rel="stylesheet" type="text/css" href="jquery/jqm-datebox-1.2.0.min.css" />
         <link rel="stylesheet" type="text/css" href="css/lunchfund_global.css" />
 
         <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-        <script type="text/javascript" src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+        <script type="text/javascript" src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
         <script type="text/javascript" src="jquery/jqm-datebox-1.2.0.comp.calbox.min.js"></script>
         <script type="text/javascript" src="jquery/jquery.formatCurrency-1.4.0.min.js"></script>
         <script type="text/javascript" src="jquery/jquery.flot.js"></script>
@@ -56,7 +56,7 @@ data-theme="a"(normal), "b"(black), "c"(yellow) "d"(blue)
         <div data-theme="a" data-role="page" id="homePage">
 
             <div data-theme="b" data-role="header" data-position="">
-                <h1>LF Calc v1.0</h1>
+                <h1>LF Calc v1.0.1<?php @include 'admin_php/debugMode.php'; ?></h1>
                 <div data-role="navbar" data-iconpos="left">
                     <ul>
                         <li><a href="#" data-transition="fade" data-icon="home"
@@ -189,6 +189,30 @@ data-theme="a"(normal), "b"(black), "c"(yellow) "d"(blue)
                     <input type="submit" name="submit" data-theme="c" data-icon="cloud" data-iconpos="right" id="submitButton" value="Submit to Server"/>
                 </form>
 
+                <!-- Last 5 submission content -->
+                <table data-role="table" id="table-column-toggle" data-mode="columntoggle" class="ui-responsive table-stroke">
+                    <thead>
+                        <tr>
+                            <th data-priority="1">Date</th>
+                            <th>Lunchers</th>
+                            <th data-priority="2">Bill Amount</th>
+                            <th>Lunch Fund</th>
+                            <th data-priority="3">Submitter</th>
+                            <th data-priority="4">Fund Holder</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>05/22/2014</td>
+                            <td>Kendrick, Phil</td>
+                            <td>$35.00</td>
+                            <td>$1.00</td>
+                            <td>Kendrick</td>
+                            <td>Phil</td>
+                        </tr>
+                    </tbody>
+                </table>
+
             </div> <!-- end of homePage content -->
 
         </div> <!-- end of homePage proper-->
@@ -211,7 +235,7 @@ Lunch People selection Page
                 <div data-role="fieldcontain">
                     <fieldset data-role="controlgroup" data-type="vertical" id="peoplelistcheckboxes">
                         <!-- Dynamically created content. Inserted by PHP -->
-                        <?php include 'php/dbLunchersList.php'; ?>
+                        <?php include 'views/dbLunchersList.php'; ?>
                     </fieldset>
                 </div>
 

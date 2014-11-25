@@ -3,7 +3,7 @@
 //--------------------------------------------------------------------------
 // Connect to mysql database
 //--------------------------------------------------------------------------
-include 'dbParms.php';
+require_once("../config/db.php");
 
 $con = mysqli_connect($host, $user, $pass);
 if (mysqli_connect_errno($con))

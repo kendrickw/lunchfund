@@ -1,11 +1,14 @@
 # ChangeLog
 
 ---
+### 1.0.1
+* Move up the Jquery mobile 1.4.2
+
 ### 1.0.0
 * Implement SQL backend
 * still submit entry to google spreadsheet as a backup
-* php/dbCreate.php for creating initial database
-* php/dbPopulateTables.php for transferring google spreadsheet data (.csv) into database
+* admin_php/dbCreate.php for creating initial database
+* admin_php/dbPopulateTables.php for transferring google spreadsheet data (.csv) into database
 * Move up the Jquery mobile 1.4.0
 * Disallow duplicate entries to be inserted into database
 * Summary tab to show book and market value (still grabbing data from google)
