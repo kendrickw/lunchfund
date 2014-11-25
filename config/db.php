@@ -4,28 +4,28 @@
 // Make sure you create a user with SELECT, INSERT, UPDATE privileges
 // To populate tables, CREATE, DROP privileges are required
 //--------------------------------------------------------------------------
-//$host = "localhost";
-//$user = "webUI";
-//$pass = "WDwGzTeuhJn7JMfN";
-//$port = 3306
 
 //--------------------------------------------------------------------------
-// MYSQL database name
-//--------------------------------------------------------------------------
-//$dbname = "lunchfund";
-
-//--------------------------------------------------------------------------
-// Bluemix ClearDB service credentials
+// If Bluemix ClearDB service credentials are available, use them
+// Otherwise, use local development MYSQL credentials.
 //--------------------------------------------------------------------------
 $services = getenv("VCAP_SERVICES");
-$services_json = json_decode($services, true);
-$mysql_config = $services_json["cleardb"][0]["credentials"];
+if ($services != null) {
+    $services_json = json_decode($services, true);
+    $mysql_config = $services_json["cleardb"][0]["credentials"];
 
-$host = $mysql_config["hostname"];
-$user = $mysql_config["username"];
-$pass = $mysql_config["password"];
-$port = $mysql_config["port"];
-$dbname = $mysql_config["name"];
+    $host = $mysql_config["hostname"];
+    $user = $mysql_config["username"];
+    $pass = $mysql_config["password"];
+    $port = $mysql_config["port"];
+    $dbname = $mysql_config["name"];    
+} else {
+    $host = "localhost";
+    $user = "webUI";
+    $pass = "WDwGzTeuhJn7JMfN";
+    $port = 3306;
+    $dbname = "lunchfund";
+}
 
 //--------------------------------------------------------------------------
 // MYSQL table names

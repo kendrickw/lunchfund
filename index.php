@@ -30,12 +30,12 @@
               href="images/splash-ipad-2048-1496.png" />
 
         <link rel="stylesheet" type="text/css" href="css/themes/lunchfund.min.css" />
-        <link rel="stylesheet" type="text/css" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
         <link rel="stylesheet" type="text/css" href="jquery/jqm-datebox-1.2.0.min.css" />
         <link rel="stylesheet" type="text/css" href="css/lunchfund_global.css" />
 
-        <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-        <script type="text/javascript" src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+        <script type="text/javascript" src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
         <script type="text/javascript" src="jquery/jqm-datebox-1.2.0.comp.calbox.min.js"></script>
         <script type="text/javascript" src="jquery/jquery.formatCurrency-1.4.0.min.js"></script>
         <script type="text/javascript" src="jquery/jquery.flot.js"></script>
@@ -189,27 +189,18 @@ data-theme="a"(normal), "b"(black), "c"(yellow) "d"(blue)
                     <input type="submit" name="submit" data-theme="c" data-icon="cloud" data-iconpos="right" id="submitButton" value="Submit to Server"/>
                 </form>
 
-                <!-- Last 5 submission content -->
+                <!-- Last couple submission content -->
                 <table data-role="table" id="table-column-toggle" data-mode="columntoggle" class="ui-responsive table-stroke">
                     <thead>
                         <tr>
-                            <th data-priority="1">Date</th>
-                            <th>Lunchers</th>
-                            <th data-priority="2">Bill Amount</th>
-                            <th>Lunch Fund</th>
-                            <th data-priority="3">Submitter</th>
-                            <th data-priority="4">Fund Holder</th>
+                            <th>Date</th>
+                            <th>Bill Amount</th>
+                            <th data-priority="1">Lunch Fund</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>05/22/2014</td>
-                            <td>Kendrick, Phil</td>
-                            <td>$35.00</td>
-                            <td>$1.00</td>
-                            <td>Kendrick</td>
-                            <td>Phil</td>
-                        </tr>
+                        <!-- Dynamically created content. Inserted by PHP -->
+                        <?php include 'views/dbEventsList.php'; ?>
                     </tbody>
                 </table>
 
