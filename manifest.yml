@@ -2,10 +2,10 @@ applications:
 - services:
   - lunchfund-ClearDB
   disk_quota: 1024M
-  host: lunchfund
-  name: LunchFund
+  host: lunchfund-dev
+  name: LunchFund-dev
   path: .
   domain: mybluemix.net
   instances: 1
   memory: 256M
-  buildpack: https://github.com/zendtech/zend-server-php-buildpack.git
+  buildpack: https://github.com/cloudfoundry/php-buildpack.git
